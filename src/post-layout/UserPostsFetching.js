@@ -1,42 +1,52 @@
-import React, { Fragment, useState } from "react";
+import React, { Fragment } from "react";
 import Comments from "./Comments";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import Container from "@material-ui/core/Container";
 import PostTitle from "./PostTitle";
 import PostBody from "./PostBody";
+import { Box, makeStyles, Typography } from "@material-ui/core";
+import { loadPosts } from "../user-data/actions/postsActions";
+
+const useStyles = makeStyles({
+  postContainer: {
+    margin: 30,
+    marginLeft: "auto",
+    marginRight: "auto",
+    padding: 0,
+    height: 552,
+    width: "90%",
+  },
+});
 
 export default function UserPostsFetching() {
-  const [posts, setPosts] = useState([]);
+  const posts = useSelector((state) => state.postsReducer);
   const selectedUser = useSelector((state) => state.selectedUserReducer);
+  const classes = useStyles();
+  const dispatch = useDispatch();
   useEffect(() => {
-    if (selectedUser) {
-      fetch(
-        `https://gorest.co.in/public-api/users/` + selectedUser.id + `/posts`
-      )
-        .then((res) => res.json())
-        .then((res) => setPosts(res.data));
-    }
+    fetch(`https://gorest.co.in/public-api/users/` + selectedUser.id + `/posts`)
+      .then((res) => res.json())
+      .then((res) => dispatch(loadPosts(res.data)));
   }, [selectedUser]);
-  console.log(posts);
 
   return (
-    <div>
+    <Fragment>
       {posts.length === 0 ? (
-        <h1>No posts</h1>
+        <Typography variant="h1">No posts</Typography>
       ) : (
-        <Container>
+        <Fragment>
           {posts.map((post) => (
-            <Fragment key={post.id}>
+            <Container key={post.id} className={classes.postContainer}>
               <PostTitle>{post.title}</PostTitle>
-              <div style={{ height: "500px", margin: "0" }}>
+              <Box>
                 <PostBody>{post.body}</PostBody>
                 <Comments postId={post.id} />
-              </div>
-            </Fragment>
+              </Box>
+            </Container>
           ))}
-        </Container>
+        </Fragment>
       )}
-    </div>
+    </Fragment>
   );
 }

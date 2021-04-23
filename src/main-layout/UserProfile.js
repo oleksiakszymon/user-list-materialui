@@ -1,20 +1,30 @@
-import React from "react";
+import React, { Fragment } from "react";
 import UserPostsFetching from "../post-layout/UserPostsFetching";
 import { useSelector } from "react-redux";
+import { Box, makeStyles, Typography } from "@material-ui/core";
+
+const useStyles = makeStyles({
+  userProfileBox: {
+    width: "calc(100% - 450px)",
+    float: "right",
+    textAlign: "center",
+    height: "100vh",
+  },
+});
 
 export default function UserInfo() {
   const selectedUser = useSelector((state) => state.selectedUserReducer);
-
+  const classes = useStyles();
   return (
-    <div className="user-info">
+    <Box className={classes.userProfileBox}>
       {selectedUser ? (
-        <div>
-          <h1>{selectedUser.name}</h1>
+        <Fragment>
+          <Typography variant="h1">{selectedUser.name}</Typography>
           <UserPostsFetching />
-        </div>
+        </Fragment>
       ) : (
         ""
       )}
-    </div>
+    </Box>
   );
 }

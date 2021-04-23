@@ -1,56 +1,80 @@
-import React, { useEffect } from "react";
-import { useState } from "react";
+import React, { Fragment, useEffect } from "react";
 import Paper from "@material-ui/core/Paper";
+import { useDispatch, useSelector } from "react-redux";
+import { loadComments } from "../user-data/actions/commentsActions";
+import { makeStyles } from "@material-ui/styles";
+import {
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Typography,
+} from "@material-ui/core";
+import AccountCircleIcon from "@material-ui/icons/AccountCircle";
+
+const useStyles = makeStyles(() => ({
+  paper: {
+    fontSize: "20px",
+    width: "calc(25% - 5px)",
+    float: "left",
+    height: "400px",
+  },
+  commentBody: {
+    margin: 0,
+    marginBottom: "15px",
+    paddingLeft: "5px",
+    paddingRight: "5px",
+  },
+  h5: {
+    margin: "5px",
+  },
+}));
 
 export default function Comments(props) {
+  const classes = useStyles();
   const { postId } = props;
-  const [comments, setComments] = useState([]);
+  const comments = useSelector((state) => state.commentsReducer);
+  const dispatch = useDispatch();
   useEffect(() => {
     let isMounted = true;
     fetch(`https://gorest.co.in/public-api/posts/` + postId + `/comments`)
       .then((res) => res.json())
       .then((res) => {
         if (isMounted) {
-          setComments(res.data);
+          dispatch(loadComments(postId, res.data));
         }
       });
     return () => {
       isMounted = false;
     };
-  });
+  }, [postId]);
 
   return (
-    <div>
-      <Paper
-        variant="outlined"
-        style={{
-          fontSize: "20px",
-          width: "calc(25% - 5px)",
-          float: "left",
-          height: "400px",
-        }}
-      >
-        <h3>{comments.length !== 0 ? "Comments:" : "No comments"}</h3>
-        <ul>
-          {comments.map((comment) => {
-            return (
-              <li key={comment.id}>
-                <h5 style={{ margin: "5px" }}>{comment.name}</h5>
-                <p
-                  style={{
-                    margin: 0,
-                    marginBottom: "15px",
-                    paddingLeft: "5px",
-                    paddingRight: "5px",
-                  }}
-                >
-                  {comment.body}
-                </p>
-              </li>
-            );
-          })}
-        </ul>
-      </Paper>
-    </div>
+    <Paper variant="outlined" className={classes.paper}>
+      {comments[postId] ? (
+        <Fragment>
+          <Typography variant="h3">
+            {comments[postId].length !== 0 ? "Comments:" : "No comments"}
+          </Typography>
+          <List>
+            {comments[postId].map((comment) => {
+              return (
+                <ListItem key={comment.id}>
+                  <ListItemIcon>
+                    <AccountCircleIcon />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={comment.name}
+                    secondary={comment.body}
+                  />
+                </ListItem>
+              );
+            })}
+          </List>
+        </Fragment>
+      ) : (
+        ""
+      )}
+    </Paper>
   );
 }
